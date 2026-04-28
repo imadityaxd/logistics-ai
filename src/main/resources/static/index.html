@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>AI Logistics Shield</title>
+<style>
+  body{font-family:sans-serif;padding:40px;background:#f0f4f8;margin:0}
+  .card{background:white;padding:28px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);max-width:680px;margin:auto}
+  h1{font-size:24px;color:#1a1a2e;margin-bottom:6px}
+  .badge{background:#e8f4fd;color:#1565c0;font-size:12px;padding:4px 10px;border-radius:20px;display:inline-block;margin-bottom:16px}
+  p{color:#555;margin-bottom:8px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{background:#f0f4f8;border:1px solid #ddd;padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer;color:#333}
+  .chip:hover,.chip.active{background:#1565c0;color:white;border-color:#1565c0}
+  textarea{width:100%;height:90px;padding:12px;font-size:14px;border:1px solid #ddd;border-radius:8px;resize:none;font-family:sans-serif;box-sizing:border-box;margin-bottom:12px}
+  button{background:#1565c0;color:white;border:none;padding:12px 28px;border-radius:8px;font-size:15px;cursor:pointer;font-weight:500}
+  button:disabled{opacity:0.6;cursor:not-allowed}
+  #result{margin-top:20px;padding:16px;background:#f8f9fa;border-radius:8px;white-space:pre-wrap;font-size:14px;color:#333;min-height:60px;line-height:1.7;display:none}
+  .loading{color:#1565c0;font-style:italic}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="badge">Powered by Gemini AI on Google Cloud</div>
+  <h1>Dynamic Supply Chain AI</h1>
+  <p>Enter a disruption scenario to get AI-powered risk analysis and alternate routes.</p>
+  <div class="chips">
+    <div class="chip" onclick="setQ(this,'Suez Canal blocked by grounded vessel, 6-day delay on Asia-Europe lane')">Suez Canal</div>
+    <div class="chip" onclick="setQ(this,'Typhoon hitting Tokyo port, all operations suspended 72 hours')">Tokyo typhoon</div>
+    <div class="chip" onclick="setQ(this,'Heavy flooding in Singapore port, 40% capacity offline')">Singapore flood</div>
+    <div class="chip" onclick="setQ(this,'US West Coast dock workers strike, LA port at 20% capacity')">US port strike</div>
+  </div>
+  <textarea id="q" placeholder="Or type your own: e.g. Major earthquake disrupts rail freight across Eastern Europe..."></textarea>
+  <button id="btn" onclick="analyze()">Analyze Risk</button>
+  <div id="result"></div>
+</div>
+<script>
+function setQ(el,text){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('q').value=text;
+}
+async function analyze(){
+  const news=document.getElementById('q').value.trim();
+  if(!news) return alert('Please enter a disruption scenario!');
+  const btn=document.getElementById('btn');
+  const result=document.getElementById('result');
+  btn.disabled=true; btn.textContent='Analyzing...';
+  result.style.display='block';
+  result.className='loading'; result.textContent='Connecting to Gemini AI...';
+  try{
+    const res=await fetch('/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({news:news})});
+    const data=await res.json();
+    result.className=''; result.textContent=data.result||data.error||'No response';
+  }catch(e){result.className='';result.textContent='Error: '+e.message;}
+  btn.disabled=false; btn.textContent='Analyze Risk';
+}
+</script>
+</body>
+</html>
